@@ -147,30 +147,44 @@ In order to prove our claim, we must prove (a) that if a polygon is simple then 
 
 \subsubsection{Convex Polygons' Exterior Angles Sum to \(2\pi\)}
 
-\paragraph{Lemma 1.} If a polygon with \(n\) sides is convex, then we know that the sum of the interior angles must be \(\pi(n - 2)\). (Proof omitted.)
+Suppose a convex polygon is drawn on the ground, and we are standing on one of the edges, facing parallel to the edge with our right foot inside the polygon and our left foot outside. We shall call the direction that we are currently facing the initial direction. Then if we walk forward following the the edges of the polygon, and at each vertex we turn to face the next vertex, turning whichever way (right or left) is a smaller turn. Eventually we would reach the starting edge again.
 
-\paragraph{Lemma 2.} For every point on a convex polygon, the sum of the interior and exterior angles must be \(\pi\) radians. (Proof omitted.)
+At each of the vertices we turned toward the right an amount equal to the exterior angle. It must be the case that we always turn to the right, since every interior angle is less than \(\pi\) radians (by definition of convex), and the inside of the polygon is to our right. See figure \ref{walk-1}.
 
-\paragraph{Proof.} Given a convex polygon with the sequence of vertices \(V\), by lemma 1 we can formulate \(|V|\) equations; one for each vertex \(v \in V\).
-\begin{equation}
-	\inta{v} + \exta{v} = \pi
-\end{equation}
+\begin{figure}[htbp]
+	\centering
+	\begin{tikzpicture}
+		\shadedraw[->, thick, left color=green!60, right color=white] (0, 0) node[anchor=north west] {P}
+		to (-1, 1) node[anchor=north east] {Q}
+		to (0, 1.5) node[anchor=south west] {R};
+		\draw[->, thick] (-1, 1) to (-1.5, 1.5);
+		\filldraw (-1, 1) circle (0.1);
+		\filldraw (-1.2, 1.2) to (-1.07, 0.93) to (-0.93, 1.07) to cycle;
+		\draw[->, thick] (-1.3, 1.3) arc (135:22.5:0.4);
+	\end{tikzpicture}
+	\caption{Turning at a vertex of a convex polygon.}
+	\label{walk-1}
+\end{figure}
 
-If we take the sum of all equations in this family of equations, we obtain the following equation.
-\begin{equation}
-	\sum_{v \in V} \inta{v} + \sum_{v \in V} \exta{v} = n\pi
-\end{equation}
-This can then be rearranged into the next equation.
-\begin{equation}
-	\sum_{v \in V} \exta{v} = n\pi - \sum_{v \in V} \inta{v}
-\end{equation}
-But by lemma 1, we know the sum of the interior angles of the convex polygon.
-\begin{equation}
-	\sum_{v \in V} \exta{v} = n\pi - \pi(n-2) = n\pi - n\pi + 2\pi = 2\pi
-\end{equation}
+Since we always turned to our right, and we ended up facing the initial direction, and at no other edge or vertex were we facing the initial direction, it must be that in total we turned precisely one rotation, that is, \(2\pi\).
+
+Thus the total amount we turned (\(2\pi\)) must be equal to the sum of the amounts we turned at each vertex (\(\sum_{v \in V}\exta{v}\)).
 
 \subsubsection{Only Convex Polygons' Angles Sum to \(2\pi\)}
 
+\paragraph{Concave polygons.} Suppose once again that a polygon is drawn on the ground, but this time let it be concave. Again, suppose we are starting on any edge facing parallel to it with our right foot inside the polygon. This is our initial direction. Suppose we again walk the edges in the same way as we walked the convex polygon.
 
+At some point, we will reach a vertex whose interior angle is greater than \(\pi\) radians (by definition of concave). When this occurs, we will find that the next vertex is on our left hand side, and we will have to turn in that direction. Since eventually we must reach the starting point and be facing the initial direction, we must at some point turn enough to the right to correct for our leftward deviation. This means that for every interior angle greater than \(\pi\) radians, we will add both the deviation and the correction to the complete turn of \(2\pi\) which we must eventually make.
+
+The deviation at each of these vertices is \(\exta{v}\), and the correction at some future turn must match it. Let \(V' \subset V\) be the set of vertices whose interior angles are greater than \(\pi\). Formally,
+\begin{equation}
+	V' = \{ v \in V : \inta{v} > \pi \}.
+\end{equation}
+Therefore we have the following.
+\begin{equation}
+	\sum_{v \in V} \exta{v} = 2\pi + 2\sum_{v \in V'} \exta{v}
+	\label{ext-concave}
+\end{equation}
+And since exterior angles are always positive (see definition above), and in the case of every vertex in \(V'\) not equal to zero (otherwise the interior angle would be precisely \(\pi\) contradicting the definition of \(V'\)), equation \ref{ext-concave} must be strictly greater than \(2\pi\).
 
 \end{document}
