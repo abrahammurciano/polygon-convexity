@@ -1,0 +1,29 @@
+\documentclass{article}
+
+\title{Determining the Convexity of any Polygon}
+\author{Abraham Murciano}
+
+\begin{document}
+\maketitle
+
+\section{Abstract}
+
+This paper presents and proves the correctness of an algorithm which determines if a sequence of points in three dimensional space forms a convex polygon or not. We will discuss simple concave polygons as well as complex (self intersecting) polygons. As an added bonus, we will be able to detect and reject any input whose vertices do not lie on a common plane.
+
+\section{Definitions}
+
+\begin{description}
+	\item[Polygon] A polygon is a plane figure that is described by a finite number of straight line segments connected to form a closed polygonal circuit. The solid plane region, the bounding circuit, or the two together, may be called a polygon.
+\end{description}
+
+\section{The Algorithm}
+
+We will begin by explaining how the algorithm works, then presenting the algorithm at the end of this section.
+
+\subsection{Input}
+
+The algorithm accepts a sequence of vertices (which are points in three dimensional space). The vertices represent a polygon formed by constructing an edge between all adjacent vertices in the sequence. An additional edge between the first and last vertices is constructed
+
+The algorithm boils down to a single check. A sequence of vertices forms a simple convex polygon if and only if the sum of the exterior angles adds up to \(2\pi\).
+
+\end{document}
