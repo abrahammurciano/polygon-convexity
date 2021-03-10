@@ -179,12 +179,15 @@ At some point, we will reach a vertex whose interior angle is greater than \(\pi
 The deviation at each of these vertices is \(\exta{v}\), and the correction at some future turn must match it. Let \(V' \subset V\) be the set of vertices whose interior angles are greater than \(\pi\). Formally,
 \begin{equation}
 	V' = \{ v \in V : \inta{v} > \pi \}.
+	\label{v-prime}
 \end{equation}
 Therefore we have the following.
 \begin{equation}
 	\sum_{v \in V} \exta{v} = 2\pi + 2\sum_{v \in V'} \exta{v}
 	\label{ext-concave}
 \end{equation}
-And since exterior angles are always positive (see definition above), and in the case of every vertex in \(V'\) not equal to zero (otherwise the interior angle would be precisely \(\pi\) contradicting the definition of \(V'\)), equation \ref{ext-concave} must be strictly greater than \(2\pi\).
+And since exterior angles are always positive (see definition above), and in the case of every vertex in \(V'\) not equal to zero (otherwise the interior angle would be precisely \(\pi\) contradicting equation \ref{v-prime}), equation \ref{ext-concave} must be strictly greater than \(2\pi\).
+
+\paragraph{Complex polygons.} Suppose for a third time that a polygon is drawn on the ground. This time let the polygon have self intersections and thus be complex. This time we lost the constancy of the fact that the inside of the polygon will always be on our right hand side as we walk the edges. This is because as whenever we walk past an intersection of edges, the filling of the polygon will switch from between being on our right and on our left.
 
 \end{document}
