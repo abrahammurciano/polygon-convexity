@@ -45,7 +45,7 @@ This paper presents and proves the correctness of an algorithm which determines 
 		We shall denote the interior angle at vertex \(Q\) as \(\inta{Q}\).
 
 	\item[Exterior angle]
-		If \(P\), \(Q\), and \(R\) are three consecutive vertices of a polygon (such that \(Q\) is in between \(P\) and \(R\)), the exterior angle of the polygon at a vertex \(Q\) is \(\exta{Q} = \ang{\vecl{PQ}, \vecl{QR}}\).
+		If \(P\), \(Q\), and \(R\) are three consecutive points of a sequence of points (such that \(Q\) is in between \(P\) and \(R\)), the exterior angle of the sequence at the point \(Q\) is \(\exta{Q} = \ang{\vecl{PQ}, \vecl{QR}}\).
 
 		Note, since the range of the function \(\measuredangle\) is \([0, \pi]\), by `exterior angle' we refer always (unless otherwise noted) to a positive angle.
 
@@ -141,9 +141,15 @@ The function \textsc{IsConvex} takes as input a sequence of points \(V\) and ret
 
 A sequence of vertices \(V\) forms a simple convex polygon if and only if the sum of the exterior angles is equal to \(2\pi\).
 
-\subsection{Proof}
+In order to prove our claim, we must prove all of the following cases.
+\begin{enumerate}
+	\item If a polygon is convex then the sum of its exterior angles is equal to \(2\pi\).
+	\item If a polygon is concave then the sum of its exterior angles is greater than \(2\pi\).
+	\item If a polygon is complex then the sum of its exterior angles is greater than \(2\pi\).
+	\item If all points in a sequence do not share a common plane, then the exterior angles of the points have a sum greater than \(2\pi\).
+\end{enumerate}
 
-In order to prove our claim, we must prove (a) that if a polygon is simple then the sum of its exterior angles is equal to \(2\pi\), and (b) that if a sequence of points' angles sum to \(2\pi\), then it must form a convex polygon. We shall commence with the easier of the two.
+\subsection{Proof}
 
 \subsubsection{Convex Polygons' Exterior Angles Sum to \(2\pi\)}
 
@@ -162,7 +168,7 @@ At each of the vertices we turned toward the right an amount equal to the exteri
 		\filldraw (-1.2, 1.2) to (-1.07, 0.93) to (-0.93, 1.07) to cycle;
 		\draw[->, thick] (-1.3, 1.3) arc (135:22.5:0.4);
 	\end{tikzpicture}
-	\caption{Turning at a vertex of a convex polygon.}
+	\caption{Turns at a vertex of a convex polygon are always right turns.}
 	\label{walk-1}
 \end{figure}
 
@@ -170,11 +176,27 @@ Since we always turned to our right, and we ended up facing the initial directio
 
 Thus the total amount we turned (\(2\pi\)) must be equal to the sum of the amounts we turned at each vertex (\(\sum_{v \in V}\exta{v}\)).
 
-\subsubsection{Only Convex Polygons' Angles Sum to \(2\pi\)}
+\subsubsection{A Concave Polygon's Exterior Angles' Sum exceeds \(2\pi\)}
 
-\paragraph{Concave polygons.} Suppose once again that a polygon is drawn on the ground, but this time let it be concave. Again, suppose we are starting on any edge facing parallel to it with our right foot inside the polygon. This is our initial direction. Suppose we again walk the edges in the same way as we walked the convex polygon.
+Suppose once again that a polygon is drawn on the ground, but this time let it be concave. Again, suppose we are starting on any edge facing parallel to it with our right foot inside the polygon. This is our initial direction. Suppose we again walk the edges in the same way as we walked the convex polygon.
 
-At some point, we will reach a vertex whose interior angle is greater than \(\pi\) radians (by definition of concave). When this occurs, we will find that the next vertex is on our left hand side, and we will have to turn in that direction. Since eventually we must reach the starting point and be facing the initial direction, we must at some point turn enough to the right to correct for our leftward deviation. This means that for every interior angle greater than \(\pi\) radians, we will add both the deviation and the correction to the complete turn of \(2\pi\) which we must eventually make.
+At some point, we will reach a vertex whose interior angle is greater than \(\pi\) radians (by definition of concave). When this occurs, we will find that the next vertex is on our left hand side, and we will have to turn in that direction (see figure \ref{walk-2}). Since eventually we must reach the starting point and be facing the initial direction, we must at some point turn enough to the right to correct for our leftward deviation. This means that for every interior angle greater than \(\pi\) radians, we will add both the deviation and the correction to the complete turn of \(2\pi\) which we must eventually make.
+
+\begin{figure}
+	\centering
+	\begin{tikzpicture}
+		\shade[left color=orange!60, right color=white] (2, 0) to (0, 0) to (1, 1) to (0, 1.5) to (2, 1.5) to cycle;
+		\draw[->, thick] (0, 0) node[anchor=north east] {P}
+		to (1, 1) node[anchor=north west] {Q}
+		to (0, 1.5) node[anchor=south east] {R};
+		\draw[->, thick] (1, 1) to (1.5, 1.5);
+		\filldraw (1, 1) circle (0.1);
+		\filldraw (1.2, 1.2) to (1.07, 0.93) to (0.93, 1.07) to cycle;
+		\draw[->, thick] (1.3, 1.3) arc (45:157.5:0.4);
+	\end{tikzpicture}
+	\caption{A turn at an vertex \(Q\) of a concave polygon where \(\inta{Q} > \pi\), must be a left turn.}
+	\label{walk-2}
+\end{figure}%
 
 The deviation at each of these vertices is \(\exta{v}\), and the correction at some future turn must match it. Let \(V' \subset V\) be the set of vertices whose interior angles are greater than \(\pi\). Formally,
 \begin{equation}
@@ -188,6 +210,45 @@ Therefore we have the following.
 \end{equation}
 And since exterior angles are always positive (see definition above), and in the case of every vertex in \(V'\) not equal to zero (otherwise the interior angle would be precisely \(\pi\) contradicting equation \ref{v-prime}), equation \ref{ext-concave} must be strictly greater than \(2\pi\).
 
-\paragraph{Complex polygons.} Suppose for a third time that a polygon is drawn on the ground. This time let the polygon have self intersections and thus be complex. This time we lost the constancy of the fact that the inside of the polygon will always be on our right hand side as we walk the edges. This is because as whenever we walk past an intersection of edges, the filling of the polygon will switch from between being on our right and on our left.
+\subsubsection{A Complex polygon's Exterior Angles' Sum Exceeds \(2\pi\)}
+
+Suppose for a third time that a polygon is drawn on the ground. This time let the polygon have self intersections and thus be complex. If we were to walk the edges like we did before, we would once again end facing the initial direction.
+
+Reminder; a turn is made when we have concluded the traversal of a single edge, and are standing on a vertex. If the subsequent vertex is situated on our left hand side we make a left turn, otherwise we make a right turn. Remember, a turn is never negative or greater than \(\pi\) radians.
+
+Without loss of generality, suppose the sum of the right turns is greater than or equal to the sum of the left turns. Since we must end facing the initial direction, the sum of all the right turns minus the sum of the left turns is a non-negative multiple of \(2\pi\). Let us call this value \(T\). We can now say that for some \(n \in \mathbb{N}_0\),
+\begin{equation}
+	T = 2\pi n
+\end{equation}
+
+We shall now branch our analysis into three cases. The first case is when \(n = 0\), the second when \(n = 1\), and the third when \(n \geq 2\).
+
+\paragraph{Case 1.} When \(n = 0 \Rightarrow T = 2\pi \times 0 = 0\). This means that the sum of the right turns is equal to that of the left turns.
+
+Since we started standing on an edge, this edge touches one vertex directly in front of us and another directly behind us. As we are to traverse every vertex before reaching the starting point, we must at some point reach the vertex behind us.
+
+In order to do this without walking backwards --- for we must always walk forward in the direction we face --- we must at some edge (let us call it \(e\)) be facing `backwards'; that is strictly more than \(\frac{\pi}{2}\) radians from the initial direction. Without loss of generality, assume the described direction can be faced with a right turn from the initial direction.
+
+In order to reach such a direction, the sum of all the previous right turns minus the sum of all the previous left turns must exceed \(\frac{\pi}{2}\) radians (a quarter turn).
+
+Let \(R_p\) and \(L_p\) be the sum of all the previous right and left turns respectively before reaching edge \(e\). Further, let \(R_f\) and \(L_f\) be the sum of all the future right and left turns respectively after reaching edge \(e\).
+
+We showed at the start of this case that the sums of the right and left turns are equal.
+\begin{gather}
+	R_p + R_f = L_p + L_f \\
+	\Rightarrow R_p - L_p = L_f - R_f \label{case-1-eq1}
+\end{gather}
+
+Then we showed that the previous right turns minus the previous left turns is greater than \(\frac{\pi}{2}\).
+\begin{gather}
+	R_p - L_p > \frac{\pi}{2} \label{case-1-eq2} \\
+	\Rightarrow R_p > L_p + \frac{\pi}{2}
+\end{gather}
+
+From equations \ref{case-1-eq1} and \ref{case-1-eq2} we show that the reverse is true for future turns.
+\begin{gather}
+	L_f - R_f > \frac{\pi}{2} \\
+	\Rightarrow L_f > R_f + \frac{\pi}{2}
+\end{gather}
 
 \end{document}
