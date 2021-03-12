@@ -10,7 +10,6 @@
 \usetikzlibrary{decorations.markings}
 
 \newcommand{\vecl}{\overrightarrow} % long vector for multiple characters
-\newcommand{\ang}[1]{\measuredangle\left( #1 \right)}
 \newcommand{\len}[1]{\left\lVert #1 \right\rVert}
 \newcommand{\inta}[1]{\operatorname{int}\left( #1 \right)} % interior angle
 \newcommand{\exta}[1]{\operatorname{ext}\left( #1 \right)} % exterior angle
@@ -23,42 +22,57 @@
 
 \section{Abstract}
 
-This paper presents and proves the correctness of an algorithm which determines if a sequence of points in three-dimensional space forms a convex polygon or not. We will discuss simple concave polygons as well as complex (self intersecting) polygons. As an added bonus, we will be able to detect and reject any input whose vertices do not lie on a common plane.
+This paper presents and proves the correctness of an algorithm which determines if a sequence of points in three-dimensional space forms a convex polygon or not. We will discuss simple convex and concave polygons as well as complex (self intersecting) polygons, and ultimately even non-planar polygons.
 
 \section{Definitions}
 
 \begin{description}
-	\item[Angle between vectors]
-		The angle between two three-dimensional vectors \(\vec{u}\) and \(\vec{v}\), which we shall denote henceforth as \(\ang{\vec{u}, \vec{v}}\), is defined as follows.
+	\item[Turn between vectors]
+		The turn between two three-dimensional vectors \(\vec{u}\) and \(\vec{v}\), which we shall denote henceforth as \(T(\vec{u}, \vec{v}) \in [0, \pi]\), is defined as follows.
 		\begin{equation*}
-			\ang{\vec{u}, \vec{v}} = \arccos \left( \frac{\vec{u} \cdot \vec{v}} {\len{\vec{u}} \cdot \len{\vec{v}}} \right)
+			T(\vec{u}, \vec{v}) = \arccos \left( \frac{\vec{u} \cdot \vec{v}} {\len{\vec{u}} \cdot \len{\vec{v}}} \right)
 		\end{equation*}
-		It is important to note that \(\ang{\vec{u}, \vec{v}}\) is always between 0 and \(\pi\) radians. For any two vectors there are two angles between them, and the function \(\measuredangle\) always gives us the smaller of the two.
+		For any two vectors there are two angles between them, and the function \(T\) always gives us the smaller of the two.
+
+	\item[Left turn]
+		For a vector \(\vec{u}\) and another vector \(\vec{v}\) which is not parallel to \(\vec{u}\) or to \(-\vec{u}\), let \(Q\) be the plane defined by them. If we partition \(\mathbb{R}^3\) into two partitions, one on each face of the plane, and choose one of them as the `top' of the plane and the other as the `bottom', then \(T(\vec{u}, \vec{v})\) is a left turn if \(\vec{u} \times \vec{v}\) points from the plane to the `top' partition.
+
+	\item[Right turn]
+		\(T(\vec{u}, \vec{v})\) is a right turn if it is not a left turn. (This means we are treating turns of 0 and of \(\pi\) radians as right turns.)
 
 	\item[Polygon]
-		A polygon is a \emph{plane} figure that is described by a finite number of straight line segments connected to form a closed circuit. The enclosed plane region, as well as the bounding circuit, is what we shall call a polygon.
+		A polygon is a sequence of points (also called vertices) in three-dimensional space where each point is connected to the next by a straight line segment called an edge. There is also an edge between the last and first points. The edges form a closed path.
+
+		Most definitions of a polygon are in fact what we will refer to as a simple polygon, but since we are interested in processing any given sequence of points, and to simplify our language in this paper, we shall extend our definition of a polygon to include any such sequences.
+
+	\item[Planar polygon]
+		A planar polygon is a polygon whose vertices all share a common plane.
+
+	\item[Non-planar polygon]
+		A non-planar polygon is simply a polygon which is not planar.
 
 	\item[Simple polygon]
-		A simple polygon is a polygon whose bounding line segments do not intersect with each other.
-
-	\item[Interior angle]
-		For a simple polygon, an angle between two adjacent line segments is called an interior angle (or internal angle) if a point within the angle is in the interior of the polygon. A simple polygon has exactly one internal angle per vertex.
-
-		We shall denote the interior angle at vertex \(Q\) as \(\inta{Q}\).
-
-	\item[Exterior angle]
-		If \(P\), \(Q\), and \(R\) are three consecutive points of a sequence of points (such that \(Q\) is in between \(P\) and \(R\)), the exterior angle of the sequence at the point \(Q\) is \(\exta{Q} = \ang{\vecl{PQ}, \vecl{QR}}\).
-
-		Note, since the range of the function \(\measuredangle\) is \([0, \pi]\), by `exterior angle' we refer always (unless otherwise noted) to a positive angle.
+		A simple polygon is a planar polygon whose bounding edges do not intersect with one another.
 
 	\item[Convex polygon]
 		A polygon is convex if it is simple and all its interior angles are less than \(\pi\) radians.
 
 	\item[Concave polygon]
-		A polygon is concave if it is simple and not convex.
+		A polygon is concave if it is simple and not convex. That is, if it has an interior angle greater than \(\pi\) radians.
 
 	\item[Complex polygon]
-		A polygon is complex if it is not simple, i.e. if its edges intersect with each other. There is debate whether or not complex polygons are considered polygons, but for the purposes of this paper we shall refer to them as polygons.
+		A polygon is complex if it is planar, but not simple. That is, if its edges intersect with each other.
+
+	\item[Turn of a polygon at a vertex]
+		If \(A\), \(B\), and \(C\) are three adjacent vertices of a polygon \(P\) such that \(B\) is in between \(A\) and \(C\), the turn of the polygon at the point \(B\) is \(T_P(B) = T(\vecl{AB}, \vecl{BC})\).
+
+		Note, for polygons for which the term `exterior angle' is defined, the turn at a vertex is equal to the absolute value of the exterior angle at that vertex.
+
+	\item[Total turn of a polygon]
+		The total turn of a polygon \(P\), is the sum of the turns of all its vertices. We shall use the following shorthand notation to denote this.
+		\begin{equation*}
+			\sum T_P = \sum_{v \in P} T_P(v)
+		\end{equation*}
 \end{description}
 
 \begin{figure}[htbp]
@@ -94,48 +108,41 @@ We will begin by explaining how the algorithm works, then presenting the algorit
 
 \subsection{Input}
 
-The algorithm accepts a sequence of points in three-dimensional space. The points, if they share a common plane, represent a polygon formed by constructing an edge between all adjacent vertices in the sequence and an additional edge between the first and last vertices.
+The algorithm accepts a sequence of points \(P\) in three-dimensional space. The points represent a polygon formed by constructing an edge between all adjacent vertices in the sequence and an additional edge between the first and last vertices.
 
 \subsection{Output}
 
-The algorithm returns True if the input forms a convex polygon, and False otherwise.
-
-Some examples of when the input does not form a convex polygon are
-\begin{itemize}
-	\item if the points form a concave polygon,
-	\item if the points form a complex polygon, and
-	\item if the points do not share a common plane, and thus do not form a polygon at all.
-\end{itemize}
+The algorithm returns True if the input forms a convex polygon, and False if they form any other type of polygon.
 
 \subsection{Processing}
 
-First, if at least three consecutive points lie consecutively on a single line, the middle points may be removed as they contribute nothing to the sequence and are thus meaningless. The check necessary to do this is simple enough and has been omitted for conciseness. From now on we may assume that any such cases are corrected before any further processing is performed.
+First, if at least three consecutive points lie consecutively on a single line, the middle points may be removed as they contribute nothing to the polygon and are thus meaningless. The check necessary to do this is simple enough and has been omitted for conciseness. From now on we may assume that any such cases are corrected before any further processing is performed.
 
-The algorithm then boils down to a single check. A sequence of vertices forms a simple convex polygon if and only if the sum of the exterior angles is equal to \(2\pi\). Formally, the algorithm checks if the following equation holds true, where \(V\) is the input sequence of vertices.
+The algorithm then boils down to a single check. A sequence of vertices forms a simple convex polygon if and only if the sum of the turns is equal to \(2\pi\). Formally, the algorithm checks if the following equation holds true.
 
 \begin{equation*}
-	\sum_{v \in V} \exta{v} = 2\pi
+	\sum T_P = 2\pi
 \end{equation*}
 
 \subsection{Pseudo Code}
 
-The function \textsc{IsConvex} takes as input a sequence of points \(V\) and returns whether or not the points form a convex polygon.
+The function \textsc{IsConvex} takes as input a sequence of points \(P\) and returns whether or not the points form a convex polygon.
 
 \begin{algorithm}[htbp]
 	\begin{algorithmic}
-		\Function{IsConvex}{$V$}
-		\State Remove meaningless vertices from \(V\)
-		\If{\(|V| < 3\)}
+		\Function{IsConvex}{$P$}
+		\State Remove meaningless vertices from \(P\)
+		\If{\(|P| < 3\)}
 		\Return False
 		\EndIf
-		\State \(s := 0\) \Comment{The sum of the exterior angles.}
-		\For{\(i\) from 0 to \(|V| - 1\)}
-		\State \(P := V_{i-1 \mod |V|}\) \Comment{The previous point.}
-		\State \(Q := V_{i}\) \Comment{The current point.}
-		\State \(R := V_{i+1 \mod |V|}\) \Comment{The next point.}
-		\State \(s := s + \ang{\vecl{PQ}, \vecl{QR}}\) \Comment{Add the exterior angle of \(Q\).}
+		\State \(\Sigma := 0\) \Comment{The running sum of the turn.}
+		\For{\(i\) from 0 to \(|P| - 1\)}
+		\State \(A := P_{i-1 \mod |P|}\) \Comment{The previous point.}
+		\State \(B := P_{i}\) \Comment{The current point.}
+		\State \(C := P_{i+1 \mod |P|}\) \Comment{The next point.}
+		\State \(\Sigma := \Sigma + T(\vecl{AB}, \vecl{BC})\) \Comment{Add the turn at point \(B\).}
 		\EndFor
-		\State\Return \(s = 2\pi\)
+		\State\Return \(\Sigma = 2\pi\)
 		\EndFunction
 	\end{algorithmic}
 \end{algorithm}
@@ -144,30 +151,30 @@ The function \textsc{IsConvex} takes as input a sequence of points \(V\) and ret
 
 \subsection{Claim}
 
-A sequence of vertices \(V\) forms a simple convex polygon if and only if the sum of the exterior angles is equal to \(2\pi\).
+A sequence of vertices \(P\) forms a convex polygon if and only if the total turn \(\sum T_P\) is equal to \(2\pi\).
 
 In order to prove our claim, we must prove all of the following cases.
 \begin{enumerate}
-	\item If a polygon is convex then the sum of its exterior angles is equal to \(2\pi\).
-	\item If a polygon is concave then the sum of its exterior angles is greater than \(2\pi\).
-	\item If a polygon is complex then the sum of its exterior angles is greater than \(2\pi\).
-	\item If all points in a sequence do not share a common plane, then the exterior angles of the points have a sum greater than \(2\pi\).
+	\item If a polygon is convex then the total turn is equal to \(2\pi\).
+	\item If a polygon is concave then the total turn is greater than \(2\pi\).
+	\item If a polygon is complex then the total turn is greater than \(2\pi\).
+	\item If a polygon is non-planar, then the total turn is greater than \(2\pi\).
 \end{enumerate}
 
 \subsection{Proof}
 
-\subsubsection{Convex Polygons' Exterior Angles Sum to \(2\pi\)}
+\subsubsection{Convex Polygons Have a Total Turn of Precisely \(2\pi\)}
 
-Suppose a convex polygon is drawn on the ground, and we are standing on one of the edges, facing parallel to the edge with our right foot inside the polygon and our left foot outside. We shall call the direction that we are currently facing the initial direction. Then if we walk forward following the the edges of the polygon, and at each vertex we turn to face the next vertex, turning whichever way (right or left) is a smaller turn. Eventually we would reach the starting edge again.
+Suppose a convex polygon \(P\) is drawn on flat ground, and we are standing on one of the edges, facing parallel to the edge with our right foot inside the polygon and our left foot outside. We shall call the direction that we are currently facing the initial direction. Then if we walk forward following the the edges of the polygon, and at each vertex we turn to face the next vertex, eventually we would reach the starting edge again.
 
 At each of the vertices we turned toward the right an amount equal to the exterior angle. It must be the case that we always turn to the right, since every interior angle is less than \(\pi\) radians (by definition of convex), and the inside of the polygon is to our right. See figure \ref{walk-1}.
 
 \begin{figure}[htbp]
 	\centering
 	\begin{tikzpicture}
-		\shadedraw[->, thick, left color=green!60, right color=white] (0, 0) node[anchor=north west] {\(P\)}
-		to (-1, 1) node[anchor=north east] {\(Q\)}
-		to (0, 1.5) node[anchor=south west] {\(R\)};
+		\shadedraw[->, thick, left color=green!60, right color=white] (0, 0) node[anchor=north west] {\(A\)}
+		to (-1, 1) node[anchor=north east] {\(B\)}
+		to (0, 1.5) node[anchor=south west] {\(C\)};
 		\draw[->, thick] (-1, 1) to (-1.5, 1.5);
 		\filldraw (-1, 1) circle (0.1);
 		\filldraw (-1.2, 1.2) to (-1.07, 0.93) to (-0.93, 1.07) to cycle;
@@ -179,7 +186,9 @@ At each of the vertices we turned toward the right an amount equal to the exteri
 
 Since we always turned to our right, and we ended up facing the initial direction, and at no other edge or vertex were we facing the initial direction, it must be that in total we turned precisely one rotation, that is, \(2\pi\).
 
-Thus the total amount we turned (\(2\pi\)) must be equal to the sum of the amounts we turned at each vertex (\(\sum_{v \in V}\exta{v}\)).
+Thus the total amount we turned (\(2\pi\)) must be equal to the sum of the amounts we turned at each vertex (\(\sum T_P\)).
+
+% TODO: continue rewriting notation from here
 
 \subsubsection{A Concave Polygon's Exterior Angles' Sum exceeds \(2\pi\)}
 
@@ -233,15 +242,15 @@ Suppose for a third time that a polygon is drawn on the ground. This time let th
 
 Since we started at a point \(S\) standing on an edge, this edge touches one vertex \(F\) directly in front of us and another vertex \(B\) directly behind us. Then let us single out the next vertex after \(F\), which we will label \(A\). Without loss of generality, we assume this point is on our right from the starting position. See figure \ref{walk-3}, where the curvy edge between \(A\) and \(B\) indicates that the path between them could consist of any number of vertices which could be anywhere on the plane and cause self intersections.
 
-The smallest turn we could make to change direction from facing in the direction \(\vecl{FA}\) at point \(A\) to be arrive at point \(B\) would be \(\alpha = \ang{\vecl{FA}, \vecl{AB}}\) radians (which must be less than \(\pi\) radians, since \(B\) does not lie on the line \(FA\)).
+The smallest turn we could make to change direction from facing in the direction \(\vecl{FA}\) at point \(A\) to be arrive at point \(B\) would be \(\alpha = T(\vecl{FA}, \vecl{AB})\) radians (which must be less than \(\pi\) radians, since \(B\) does not lie on the line \(FA\)).
 
 If at point \(A\) we were to deviate from the complex path drawn on the ground and immediately take a turn of \(\alpha\) radians to face \(B\), and subsequently walked straight to point \(B\) and finally back to \(S\), we would form a triangle, whose exterior angles we know to sum up to \(2\pi\).
 
 We may even, on the path from \(A\) to \(B\), turn more than \(\alpha\) radians as with a convex polygon with more than three edges, so long as however much we turn now will eventually be saved when we reach point \(B\) and then make a turn to face the starting point, and thus keeping our exterior angle total equal to \(2\pi\).
 
-However as soon as we turn to the left as with a concave polygon, or turn too far to the right, at least one of which is necessary in order to have self intersections (see figure \ref{self-intersections}), we raise our exterior angle total past \(2\pi\).
+However as soon as we turn to the left as with a concave polygon, or turn too far to the right, at least one of which is necessary in order to have self intersections (see figure \ref{self-intersections}), we will have to correct this deviation in the future, therefore we raise our exterior angle total past \(2\pi\).
 
-Thus if a polygon has self intersecting edges, then the sum of its exterior angles must be greater than \(2\pi\).
+Thus if a polygon has self intersecting edges, then total turn must be greater than \(2\pi\).
 
 \begin{figure}[htbp]
 	\centering
@@ -288,5 +297,11 @@ Thus if a polygon has self intersecting edges, then the sum of its exterior angl
 \end{figure}
 
 \subsubsection{Points which do not share a common plane}
+
+Given a sequence of points in three-dimensional space we may rotate them all in unison in any direction without changing the angles between any edges. Let us then rotate these points so that the plane formed by the first three points is the \(XY\)-plane.
+
+Now suppose we draw this sequence of points on the ground, treating the ground as the \(XY\)-plane, but whenever we encounter a point which does not lie on this plane (which must exist else the points would share a common plane) we raise a hill or dig a ditch in the ground so that we may walk from point to point in a straight line.
+
+
 
 \end{document}
