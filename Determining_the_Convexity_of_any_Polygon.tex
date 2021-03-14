@@ -8,11 +8,13 @@
 \usepackage{tikz}
 \usetikzlibrary{decorations.pathmorphing}
 \usetikzlibrary{decorations.markings}
+\usetikzlibrary{calc}
+\colorlet{burgundy}{red!75!black}
 
 \newcommand{\vecl}{\overrightarrow} % long vector for multiple characters
 \newcommand{\len}[1]{\left\lVert #1 \right\rVert}
-\newcommand{\inta}[1]{\operatorname{int}\left( #1 \right)} % interior angle
-\newcommand{\exta}[1]{\operatorname{ext}\left( #1 \right)} % exterior angle
+\newcommand{\inta}{\operatorname{int}} % interior angle
+\newcommand{\exta}{\operatorname{ext}} % exterior angle
 
 \title{Determining the Convexity of any Polygon}
 \author{Abraham Murciano}
@@ -34,14 +36,8 @@ This paper presents and proves the correctness of an algorithm which determines 
 		\end{equation*}
 		For any two vectors there are two angles between them, and the function \(T\) always gives us the smaller of the two.
 
-	\item[Left turn]
-		For a vector \(\vec{u}\) and another vector \(\vec{v}\) which is not parallel to \(\vec{u}\) or to \(-\vec{u}\), let \(Q\) be the plane defined by them. If we partition \(\mathbb{R}^3\) into two partitions, one on each face of the plane, and choose one of them as the `top' of the plane and the other as the `bottom', then \(T(\vec{u}, \vec{v})\) is a left turn if \(\vec{u} \times \vec{v}\) points from the plane to the `top' partition.
-
-	\item[Right turn]
-		\(T(\vec{u}, \vec{v})\) is a right turn if it is not a left turn. (This means we are treating turns of 0 and of \(\pi\) radians as right turns.)
-
 	\item[Polygon]
-		A polygon is a sequence of points (also called vertices) in three-dimensional space where each point is connected to the next by a straight line segment called an edge. There is also an edge between the last and first points. The edges form a closed path.
+		A polygon is a sequence of at least three points (also called vertices) in three-dimensional space where each point is connected to the next by a straight line segment called an edge. There is also an edge between the last and first points. The edges form a closed path.
 
 		Most definitions of a polygon are in fact what we will refer to as a simple polygon, but since we are interested in processing any given sequence of points, and to simplify our language in this paper, we shall extend our definition of a polygon to include any such sequences.
 
@@ -52,7 +48,7 @@ This paper presents and proves the correctness of an algorithm which determines 
 		A non-planar polygon is simply a polygon which is not planar.
 
 	\item[Simple polygon]
-		A simple polygon is a planar polygon whose bounding edges do not intersect with one another.
+		A simple polygon is a planar polygon whose bounding edges do not intersect with one another. That is, their edges to not touch each other except for each edge touching exactly one edge at each of its end points.
 
 	\item[Convex polygon]
 		A polygon is convex if it is simple and all its interior angles are less than \(\pi\) radians.
@@ -114,7 +110,7 @@ The algorithm accepts a sequence of points \(P\) in three-dimensional space. The
 
 The algorithm returns True if the input forms a convex polygon, and False if they form any other type of polygon.
 
-\subsection{Processing}
+\subsection{Processing} \label{processing}
 
 First, if at least three consecutive points lie consecutively on a single line, the middle points may be removed as they contribute nothing to the polygon and are thus meaningless. The check necessary to do this is simple enough and has been omitted for conciseness. From now on we may assume that any such cases are corrected before any further processing is performed.
 
@@ -165,143 +161,101 @@ In order to prove our claim, we must prove all of the following cases.
 
 \subsubsection{Convex Polygons Have a Total Turn of Precisely \(2\pi\)}
 
-Suppose a convex polygon \(P\) is drawn on flat ground, and we are standing on one of the edges, facing parallel to the edge with our right foot inside the polygon and our left foot outside. We shall call the direction that we are currently facing the initial direction. Then if we walk forward following the the edges of the polygon, and at each vertex we turn to face the next vertex, eventually we would reach the starting edge again.
+It is known that the exterior angles of a simple polygon sum to precisely \(2\pi\). An exterior angle is defined as \(\pi\) minus the interior angle. However since by definition of a convex polygon all its interior angles are less than \(\pi\), the exterior angles must be positive.
 
-At each of the vertices we turned toward the right an amount equal to the exterior angle. It must be the case that we always turn to the right, since every interior angle is less than \(\pi\) radians (by definition of convex), and the inside of the polygon is to our right. See figure \ref{walk-1}.
+Therefore for a convex polygon \(P\), we have
+\begin{equation*}
+	\sum T_P = \sum_{v \in P} T_P(v) = \sum_{v \in P} | \exta(v) | = \sum_{v \in P} \exta (v) = 2\pi
+\end{equation*}
+where \(\exta (v)\) is the exterior angle at vertex \(v\).
+
+\subsubsection{The Total Turn of a Concave Polygon Exceeds \(2\pi\)}
+
+A concave polygon must have at least one negative exterior angle. This is because it must have, by definition, at least one interior angle greater than \(\pi\) radians. Since \(\exta(v) = \pi - \inta(v)\), where \(\inta(v)\) is the interior angle, \(\exta(v)\) must be negative for some vertex \(v\).
+
+Therefore for a concave polygon \(P\), we have the following inequality.
+\begin{equation*}
+	\sum T_P = \sum_{v \in P} T_P(v) = \sum_{v \in P} | \exta(v) | > \sum_{v \in P} \exta(v) = 2\pi
+\end{equation*}
+
+\subsubsection{A Complex polygon's Total Turn Exceeds \(2\pi\)}
+
+The first thing to do is to disqualify any polygon with overlapping colinear (not necessarily consecutive) edges. If a walk through the edges would demonstrate that these edges are walked through in the same direction twice that means that a total turn of at least \(2\pi\) has already been made between the two edges, yet the traversal has not yet concluded. Otherwise, if the edges are walked over in opposite directions, that would require a total turn of at least \(\pi\) to turn around at each end of these edges. If that is all the turns that there are, then this sequence of points has only two significant points and does not form a polygon. As explained in section \ref{processing}, we may assume this is not the case.
+
+Now that we've gotten that out of the way, we may proceed with the assumption that no edges overlap. Note, this also means that no interior angle is equal to 0, \(\pi\) or \(2\pi\) radians, which means that no exterior angle is \(\pm\pi\) or 0 radians, which in turn means that no turn is 0 or \(\pi\) radians.
+
+For any complex polygon \(P\), we are able to find a sequence of consecutive vertices of \(P\) which when appended to an intersection point of \(P\) forms a simple polygon in the following way.
+
+We choose any arbitrary point on the polygon's bounding path. Then from that point we trace the bounding path, marking any intersection points we encounter. Once we arrive at an intersection point which we've previously encountered, we stop. Let this intersection point be called \(I\).
+
+The closed path which we traced from the first encounter with \(I\) to our second encounter with \(I\) is a simple polygon (see figure \ref{simple-polygon-extraction}).
 
 \begin{figure}[htbp]
 	\centering
 	\begin{tikzpicture}
-		\shadedraw[->, thick, left color=green!60, right color=white] (0, 0) node[anchor=north west] {\(A\)}
-		to (-1, 1) node[anchor=north east] {\(B\)}
-		to (0, 1.5) node[anchor=south west] {\(C\)};
-		\draw[->, thick] (-1, 1) to (-1.5, 1.5);
-		\filldraw (-1, 1) circle (0.1);
-		\filldraw (-1.2, 1.2) to (-1.07, 0.93) to (-0.93, 1.07) to cycle;
-		\draw[->, thick] (-1.3, 1.3) arc (135:22.5:0.4);
+		[point/.style={circle, inner sep=1.5pt},
+			vertex/.style={point, fill=blue!60!white},
+			intersection/.style={point, fill=red!80!black}]
+		% define pentagram's vertices
+		\coordinate (v0) at (0, 0);
+		\coordinate (v1) at (1.377, 4.236);
+		\coordinate (v2) at (2.753, 0);
+		\coordinate (v3) at (-0.851, 2.618);
+		\coordinate (v4) at (3.603, 2.618);
+		% define intersection points
+		\coordinate (i0) at (intersection of v1--v2 and v3--v4);
+		\coordinate (i1) at (intersection of v2--v3 and v4--v0);
+		\coordinate (i2) at (intersection of v3--v4 and v0--v1);
+		\coordinate (i3) at (intersection of v4--v0 and v1--v2);
+		\coordinate (i4) at (intersection of v0--v1 and v2--v3);
+		% draw the pentagram
+		\draw (v0) to (v1) to (v2) to (v3) to (v4) to cycle;
+		% draw extracted simple polygon
+		\draw[very thick, color=orange] (i4) to (v0) to (v4) to (v3) to cycle;
+		% label the vertices
+		\node[anchor=south east] at (v0) {\(v_0\)};
+		\node[anchor=north east] at (v1) {\(v_1\)};
+		\node[anchor=south west] at (v2) {\(v_2\)};
+		\node[anchor=south west] at (v3) {\(v_3\)};
+		\node[anchor=south east] at (v4) {\(v_4\)};
+		% mark the vertices
+		\node[vertex] at (v0) {};
+		\node[vertex] at (v1) {};
+		\node[vertex] at (v2) {};
+		\node[vertex] at (v3) {};
+		\node[vertex] at (v4) {};
+		% mark the intersections
+		\node[intersection] at (i0) {};
+		\node[intersection] at (i1) {};
+		\node[intersection] at (i2) {};
+		\node[intersection] at (i3) {};
+		\node[intersection] at (i4) {} node[anchor=30] at (i4) {\(I\)};
+		% define and label starting point
+		\node[point, fill=green!70!black] (S) at (intersection of v3--i3 and v0--v1) {} node[anchor=west] at (S) {\(S\)};
+		\draw[->, very thick, green!70!black] (S) to ($(S)!0.5!(i4)$);
 	\end{tikzpicture}
-	\caption{Turns at a vertex of a convex polygon are always right turns.}
-	\label{walk-1}
+	\caption{Extracting a simple polygon from a complex one. This complex polygon is a pentagram with vertices \(v_0\) through \(v_4\). \(S\) is the arbitrarily chosen starting point. The orange arrowhead marks the bounding edges of a simple polygon \(E = (v_0, v_4, v_3, I)\) embedded in the complex pentagram. \(I\) is the first (and necessarily the only) intersection point of the pentagram which we encountered twice.}
+	\label{simple-polygon-extraction}
 \end{figure}
 
-Since we always turned to our right, and we ended up facing the initial direction, and at no other edge or vertex were we facing the initial direction, it must be that in total we turned precisely one rotation, that is, \(2\pi\).
+The embedded polygon \(E\) found with this procedure must be simple since we stop our trace at the first intersection point we encounter twice. Thus all of \(P\)'s intersection points are touched only once by \(E\), except for point \(I\) which is the start and end point, so is not an intersection point of \(E\) either.
 
-Thus the total amount we turned (\(2\pi\)) must be equal to the sum of the amounts we turned at each vertex (\(\sum T_P\)).
+Let \(\alpha \in [0, 2\pi]\) be the interior angle of \(E\) at vertex \(I\), and let \(\beta = \pi - \alpha \in [-\pi, \pi]\) be the exterior angle of the same.
 
-% TODO: continue rewriting notation from here
+Suppose now we were to `walk' a cycle through the edges of \(P\) starting at the midpoint of the line segment formed by \(I\) and one of the two vertices adjacent to \(I\) which is common to both \(P\) and \(E\) (either \(v_0\) or \(v_3\) in figure \ref{simple-polygon-extraction}). Suppose we start walking in the direction away from \(I\) and are only allowed to walk forward and turn.
 
-\subsubsection{A Concave Polygon's Exterior Angles' Sum exceeds \(2\pi\)}
+The first time we reach \(I\), we will have already turned all the turns of \(E\) but one --- \(T_E(I)\), which is equal to \(|\beta|\). We immediately pass \(I\) and enter a section of the path which is no longer part of \(E\). Let us analyze the current position.
 
-Suppose once again that a polygon is drawn on the ground, but this time let it be concave. Again, suppose we are starting on any edge facing parallel to it with our right foot inside the polygon. This is our initial direction. Suppose we again walk the edges in the same way as we walked the convex polygon.
+Since \(I\) is an intersection point of \(P\), we will in future be forced to encounter it again before arriving finally at the start. However, since we've just passed \(I\), it is positioned a small distance directly behind us. This means that in order to reach it in future, our path must force us to make some turns which sum to at least \(\pi\) radians.
 
-At some point, we will reach a vertex whose interior angle is greater than \(\pi\) radians (by definition of concave). When this occurs, we will find that the next vertex is on our left hand side, and we will have to turn in that direction (see figure \ref{walk-2}). Since eventually we must reach the starting point and be facing the initial direction, we must at some point turn enough to the right to correct for our leftward deviation. This means that for every interior angle greater than \(\pi\) radians, we will add both the deviation and the correction to the complete turn of \(2\pi\) which we must eventually make.
-
-\begin{figure}
-	\centering
-	\begin{tikzpicture}
-		\shade[left color=orange!60, right color=white] (2, 0) to (0, 0) to (1, 1) to (0, 1.5) to (2, 1.5) to cycle;
-		\draw[->, thick] (0, 0) node[anchor=north east] {\(P\)}
-		to (1, 1) node[anchor=north west] {\(Q\)}
-		to (0, 1.5) node[anchor=south east] {\(R\)};
-		\draw[->, thick] (1, 1) to (1.5, 1.5);
-		\filldraw (1, 1) circle (0.1);
-		\filldraw (1.2, 1.2) to (1.07, 0.93) to (0.93, 1.07) to cycle;
-		\draw[->, thick] (1.3, 1.3) arc (45:157.5:0.4);
-	\end{tikzpicture}
-	\caption{A turn at an vertex \(Q\) of a concave polygon where \(\inta{Q} > \pi\), must be a left turn.}
-	\label{walk-2}
-\end{figure}%
-
-The deviation at each of these vertices is \(\exta{v}\), and the correction at some future turn must match it. Let \(V' \subset V\) be the set of vertices whose interior angles are greater than \(\pi\). Formally,
+This now allows us to formulate our first inequality.
 \begin{equation}
-	V' = \{ v \in V : \inta{v} > \pi \}.
-	\label{v-prime}
+	\sum T_P \geq \sum T_E - |\beta| + \pi \label{ineq-1}
 \end{equation}
-Therefore we have the following.
+
+Since we know that \(\sum T_E \geq 2\pi\) due to the simplicity of \(E\), and that \(\beta \neq \pm\pi\) from the beginning of this section, we can from inequality \ref{ineq-1} come to the following conclusion.
 \begin{equation}
-	\sum_{v \in V} \exta{v} = 2\pi + 2\sum_{v \in V'} \exta{v}
-	\label{ext-concave}
+	\sum T_P \geq 3\pi - |\beta| > 2\pi
 \end{equation}
-And since exterior angles are always positive (see definition above), and in the case of every vertex in \(V'\) not equal to zero (otherwise the interior angle would be precisely \(\pi\) contradicting equation \ref{v-prime}), equation \ref{ext-concave} must be strictly greater than \(2\pi\).
-
-\subsubsection{A Complex polygon's Exterior Angles' Sum Exceeds \(2\pi\)}
-
-Suppose for a third time that a polygon is drawn on the ground. This time let the polygon have self intersections and thus be complex. If we were to walk the edges like we did before, we would once again have to end facing the initial direction.
-
-\begin{figure}[htbp]
-	\centering
-	\begin{tikzpicture}
-		\filldraw[->, thick] (0, 0) circle (2pt) node[anchor=north east] {\(B\)} to (0, 1) circle (2pt) node[anchor=east] {\(S\)} to (0, 2) circle (2pt) node[anchor=east] {\(F\)} to (3, 0.5) circle (2pt) node[anchor=south west] {\(A\)} node[anchor=120] {\(\alpha\)};
-		\draw[->] (3, 0.5) to (4, 0) node[anchor=south west] {\(\vecl{FA}\)};
-		\draw[->] (3.5, 0.25) arc (330:210:0.4);
-		\draw[thick,decoration={aspect=1, segment length=4mm, amplitude=0.2cm, coil},decorate] (3, 0.5) to (0, 0);
-	\end{tikzpicture}
-	\caption{Three consecutive points of a complex polygon.}
-	\label{walk-3}
-\end{figure}
-
-Since we started at a point \(S\) standing on an edge, this edge touches one vertex \(F\) directly in front of us and another vertex \(B\) directly behind us. Then let us single out the next vertex after \(F\), which we will label \(A\). Without loss of generality, we assume this point is on our right from the starting position. See figure \ref{walk-3}, where the curvy edge between \(A\) and \(B\) indicates that the path between them could consist of any number of vertices which could be anywhere on the plane and cause self intersections.
-
-The smallest turn we could make to change direction from facing in the direction \(\vecl{FA}\) at point \(A\) to be arrive at point \(B\) would be \(\alpha = T(\vecl{FA}, \vecl{AB})\) radians (which must be less than \(\pi\) radians, since \(B\) does not lie on the line \(FA\)).
-
-If at point \(A\) we were to deviate from the complex path drawn on the ground and immediately take a turn of \(\alpha\) radians to face \(B\), and subsequently walked straight to point \(B\) and finally back to \(S\), we would form a triangle, whose exterior angles we know to sum up to \(2\pi\).
-
-We may even, on the path from \(A\) to \(B\), turn more than \(\alpha\) radians as with a convex polygon with more than three edges, so long as however much we turn now will eventually be saved when we reach point \(B\) and then make a turn to face the starting point, and thus keeping our exterior angle total equal to \(2\pi\).
-
-However as soon as we turn to the left as with a concave polygon, or turn too far to the right, at least one of which is necessary in order to have self intersections (see figure \ref{self-intersections}), we will have to correct this deviation in the future, therefore we raise our exterior angle total past \(2\pi\).
-
-Thus if a polygon has self intersecting edges, then total turn must be greater than \(2\pi\).
-
-\begin{figure}[htbp]
-	\centering
-	\begin{subfigure}{0.5\textwidth}
-		\centering
-		\begin{tikzpicture}
-			\fill[fill=red!5] (0, 0) -- (2, 2.5) -- (0, 2.5) -- (2, 0) -- cycle;
-			\begin{scope}[very thick,decoration={markings, mark=at position 0.5 with {\arrow{>}}}]
-				\draw[color=red!60,  very thick, postaction={decorate}] (0, 0) -- (1, 1.25);
-				\draw[color=red!60,  very thick, postaction={decorate}] (1, 1.25) -- (2, 2.5);
-				\draw[color=red!60,  very thick, postaction={decorate}] (2, 2.5) -- (0, 2.5);
-				\draw[color=red!60,  very thick, postaction={decorate}] (0, 2.5) -- (1, 1.25);
-				\draw[color=red!60,  very thick, postaction={decorate}] (1, 1.25) -- (2, 0);
-				\draw[color=red!60,  very thick, postaction={decorate}] (2, 0) -- (0, 0);
-			\end{scope}
-			\node[draw,text width=3cm, anchor=north west] at (2.2, 2.15) {These two left turns cause the intersection in the middle.};
-			\filldraw[color=red!60] (1.5, 0) circle (2pt);
-			\draw[->, thick, bend left=40] (2.1, 1.6) to (1.9, 2.4);
-			\draw[->, thick, bend right=20] (2.1, 1.3) to (0.1, 2.5);
-		\end{tikzpicture}
-	\end{subfigure}%
-	\begin{subfigure}{0.5\textwidth}
-		\centering
-		\begin{tikzpicture}
-			\fill[fill=red!5] (-0.5, 1.25) -- (0, 2.5) -- (1, 2) -- (0, 0.75) -- (0, 1.75) -- (1, 0.5) -- (0, 0) -- cycle;
-			\fill[fill=white] (0, 0.75) -- (0, 1.75) -- (0.4, 1.25) -- cycle;
-			\begin{scope}[very thick,decoration={markings, mark=at position 0.5 with {\arrow{>}}}]
-				\draw[color=red!60,  very thick, postaction={decorate}] (-0.5, 1.25) -- (0, 2.5);
-				\draw[color=red!60,  very thick, postaction={decorate}] (0, 2.5) -- (1, 2);
-				\draw[color=red!60,  very thick, postaction={decorate}] (1, 0.5) -- (0, 0);
-				\draw[color=red!60,  very thick, postaction={decorate}] (1, 2) -- (0, 0.75);
-				\draw[color=red!60,  very thick, postaction={decorate}] (0, 0.75) -- (0, 1.75);
-				\draw[color=red!60,  very thick, postaction={decorate}] (0, 1.75) -- (1, 0.5);
-				\draw[color=red!60,  very thick, postaction={decorate}] (0, 0) -- (-0.5, 1.25);
-			\end{scope}
-			\node[draw,text width=3cm, anchor=north west] at (1.5, 2.15) {These two right turns are too large and thus cause the intersection.};
-			\filldraw[color=red!60] (-0.125, 0.31) circle (2pt);
-			\draw[->, thick, bend left=20] (1.4, 1.6) to (1.1, 1.9);
-			\draw[->, thick, bend left=20] (1.4, 1.3) to (0.1, 0.8);
-		\end{tikzpicture}
-	\end{subfigure}%
-	\caption{Self intersections by turning too far right or left.}
-	\label{self-intersections}
-\end{figure}
-
-\subsubsection{Points which do not share a common plane}
-
-Given a sequence of points in three-dimensional space we may rotate them all in unison in any direction without changing the angles between any edges. Let us then rotate these points so that the plane formed by the first three points is the \(XY\)-plane.
-
-Now suppose we draw this sequence of points on the ground, treating the ground as the \(XY\)-plane, but whenever we encounter a point which does not lie on this plane (which must exist else the points would share a common plane) we raise a hill or dig a ditch in the ground so that we may walk from point to point in a straight line.
-
-
 
 \end{document}
