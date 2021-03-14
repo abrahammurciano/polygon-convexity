@@ -180,9 +180,7 @@ Therefore for a concave polygon \(P\), we have the following inequality.
 
 \subsubsection{A Complex polygon's Total Turn Exceeds \(2\pi\)}
 
-The first thing to do is to disqualify any polygon with overlapping colinear (not necessarily consecutive) edges. If a walk through the edges would demonstrate that these edges are walked through in the same direction twice that means that a total turn of at least \(2\pi\) has already been made between the two edges, yet the traversal has not yet concluded. Otherwise, if the edges are walked over in opposite directions, that would require a total turn of at least \(\pi\) to turn around at each end of these edges. If that is all the turns that there are, then this sequence of points has only two significant points and does not form a polygon. As explained in section \ref{processing}, we may assume this is not the case.
-
-Now that we've gotten that out of the way, we may proceed with the assumption that no edges overlap. Note, this also means that no interior angle is equal to 0, \(\pi\) or \(2\pi\) radians, which means that no exterior angle is \(\pm\pi\) or 0 radians, which in turn means that no turn is 0 or \(\pi\) radians.
+The first thing to do is to disqualify any polygon with overlapping colinear (not necessarily consecutive) edges. If a walk through the edges would demonstrate that these edges are walked through in the same direction twice that means that a total turn of at least \(2\pi\) has already been made between the two edges, yet the traversal has not yet concluded. Otherwise, if the edges are walked over in opposite directions, that would require a total turn of at least \(\pi\) to turn around at each end of these edges. If that is all the turns that there are, then this sequence of points has only two significant points and does not form a polygon. As explained in section \ref{processing}, we may assume this is not the case. Now that we've gotten that out of the way, we may proceed with the assumption that no edges overlap.
 
 For any complex polygon \(P\), we are able to find a sequence of consecutive vertices of \(P\) which when appended to an intersection point of \(P\) forms a simple polygon in the following way.
 
@@ -238,24 +236,24 @@ The closed path which we traced from the first encounter with \(I\) to our secon
 	\label{simple-polygon-extraction}
 \end{figure}
 
-The embedded polygon \(E\) found with this procedure must be simple since we stop our trace at the first intersection point we encounter twice. Thus all of \(P\)'s intersection points are touched only once by \(E\), except for point \(I\) which is the start and end point, so is not an intersection point of \(E\) either.
+The embedded polygon \(E\) found with this procedure must be simple since we stop our trace at the first intersection point we encounter twice, and we never retrace our steps. Thus all of \(P\)'s intersection points are touched only once by \(E\), except for point \(I\) which is the start and end point, so is not an intersection point of \(E\) either.
 
-Let \(\alpha \in [0, 2\pi]\) be the interior angle of \(E\) at vertex \(I\), and let \(\beta = \pi - \alpha \in [-\pi, \pi]\) be the exterior angle of the same.
+Let \(\alpha \in (-\pi, \pi)\) be the exterior angle of \(E\) at vertex \(I\). Since \(E\) is a simple polygon it can't have exterior angles of \(\pm\pi\), else the bounding edges would go back on themselves contradicting \(E\)'s simplicity.
 
 Suppose now we were to `walk' a cycle through the edges of \(P\) starting at the midpoint of the line segment formed by \(I\) and one of the two vertices adjacent to \(I\) which is common to both \(P\) and \(E\) (either \(v_0\) or \(v_3\) in figure \ref{simple-polygon-extraction}). Suppose we start walking in the direction away from \(I\) and are only allowed to walk forward and turn.
 
-The first time we reach \(I\), we will have already turned all the turns of \(E\) but one --- \(T_E(I)\), which is equal to \(|\beta|\). We immediately pass \(I\) and enter a section of the path which is no longer part of \(E\). Let us analyze the current position.
+The first time we reach \(I\), we will have already turned all the turns of \(E\) but one --- \(T_E(I)\), which is equal to \(|\alpha|\). We immediately pass \(I\) and enter a section of the path which is no longer part of \(E\). Let us analyze the current position.
 
 Since \(I\) is an intersection point of \(P\), we will in future be forced to encounter it again before arriving finally at the start. However, since we've just passed \(I\), it is positioned a small distance directly behind us. This means that in order to reach it in future, our path must force us to make some turns which sum to at least \(\pi\) radians.
 
 This now allows us to formulate our first inequality.
 \begin{equation}
-	\sum T_P \geq \sum T_E - |\beta| + \pi \label{ineq-1}
+	\sum T_P \geq \sum T_E - |\alpha| + \pi \label{ineq-1}
 \end{equation}
 
-Since we know that \(\sum T_E \geq 2\pi\) due to the simplicity of \(E\), and that \(\beta \neq \pm\pi\) from the beginning of this section, we can from inequality \ref{ineq-1} come to the following conclusion.
+Since we know that \(\sum T_E \geq 2\pi\) due to the simplicity of \(E\), and that \(|\alpha| \in [0, \pi)\), we can from inequality \ref{ineq-1} come to the following conclusion.
 \begin{equation}
-	\sum T_P \geq 3\pi - |\beta| > 2\pi
+	\sum T_P \geq 3\pi - |\alpha| > 2\pi
 \end{equation}
 
 \end{document}
