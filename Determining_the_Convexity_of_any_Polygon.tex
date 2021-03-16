@@ -6,9 +6,6 @@
 \usepackage[noend]{algpseudocode}		% for algorithms in pseudo code. Usage: \begin{algorithmic}
 \usepackage{subcaption}
 
-\usepackage[backend=bibtex,style=verbose-trad2]{biblatex}
-\bibliography{references}
-
 \usepackage{tikz}
 \usetikzlibrary{decorations.pathmorphing}
 \usetikzlibrary{decorations.markings}
@@ -116,7 +113,7 @@ The algorithm returns True if the input forms a convex polygon, and False if the
 
 \subsection{Processing} \label{processing}
 
-First, if at least three consecutive points lie consecutively on a single line, the middle points may be removed as they contribute nothing to the polygon and are thus meaningless. The check necessary to do this is simple enough and has been omitted for conciseness. From now on we may assume that any such cases are corrected before any further processing is performed.
+First, if at least three consecutive points lie consecutively on a single line, the middle points may be removed as they contribute nothing to the polygon and are thus insignificant. The check necessary to do this is simple enough and has been omitted for conciseness. From now on we may assume that any such cases are corrected before any further processing is performed.
 
 The algorithm then boils down to a single check. A sequence of vertices forms a simple convex polygon if and only if the sum of the turns is equal to \(2\pi\). Formally, the algorithm checks if the following equation holds true.
 
@@ -131,7 +128,7 @@ The function \textsc{IsConvex} takes as input a sequence of points \(P\) and ret
 \begin{algorithm}[htbp]
 	\begin{algorithmic}
 		\Function{IsConvex}{$P$}
-		\State Remove meaningless vertices from \(P\)
+		\State Remove insignificant vertices from \(P\)
 		\If{\(|P| < 3\)}
 		\Return False
 		\EndIf
@@ -184,9 +181,9 @@ Therefore for a concave polygon \(P\), we have the following inequality.
 
 \subsubsection{A Complex polygon's Total Turn Exceeds \(2\pi\)}
 
-The first thing to do is to disqualify any polygon with overlapping colinear (not necessarily consecutive) edges. If a walk through the edges would demonstrate that these edges are walked through in the same direction twice that means that a total turn of at least \(2\pi\) has already been made between the two edges, yet the traversal has not yet concluded. Otherwise, if the edges are walked over in opposite directions, that would require a total turn of at least \(\pi\) to turn around at each end of these edges. If that is all the turns that there are, then this sequence of points has only two significant points and does not form a polygon. As explained in section \ref{processing}, we may assume this is not the case. Now that we've gotten that out of the way, we may proceed with the assumption that no edges overlap.
+For any complex polygon \(P\), we are able to find a sequence of consecutive vertices of \(P\) which when appended to an intersection point of \(P\) forms a simple polygon \(E\) in the following way.
 
-For any complex polygon \(P\), we are able to find a sequence of consecutive vertices of \(P\) which when appended to an intersection point of \(P\) forms a simple polygon in the following way.
+First we must assume that no edge doubles back on the previous edge. This means that \(\forall v \in P,\ T_P(v) < \pi\). For cases where this assumption does not hold, see section \ref{overlapping-edges}. This will allow us to assert that \(E\) is simple.
 
 We choose any arbitrary point on the polygon's bounding path. Then from that point we trace the bounding path, marking any intersection points we encounter. Once we arrive at an intersection point which we've previously encountered, we stop. Let this intersection point be called \(I\).
 
@@ -240,9 +237,16 @@ The closed path which we traced from the first encounter with \(I\) to our secon
 	\label{simple-polygon-extraction}
 \end{figure}
 
-The embedded polygon \(E\) found with this procedure must be simple since we stop our trace at the first intersection point we encounter twice, and we never retrace our steps. Thus all of \(P\)'s intersection points are touched only once by \(E\), except for point \(I\) which is the start and end point, so is not an intersection point of \(E\) either.
+The embedded polygon \(E\) found with this procedure must be simple since all of the following hold:
+\begin{itemize}
+	\item
+		\(E\) must enclose some area since (in accordance with out assumption at the beginning of this section) no edges double back on their previous neighbour. (If not for our assumption, if we encountered a vertex whose turn was \(\pi\), we would encounter a visited intersection point an infinitesimal distance after said vertex. This would cause \(E\) to be ill-defined, and for all intents and purposes, a single point, which is certainly not a simple polygon.)
 
-Let \(\alpha \in (-\pi, \pi)\) be the exterior angle of \(E\) at vertex \(I\). Since \(E\) is a simple polygon it can't have exterior angles of \(\pm\pi\), else the bounding edges would go back on themselves contradicting \(E\)'s simplicity.
+	\item
+		\(E\) must have no intersection points since all of \(P\)'s intersection points are touched only once by \(E\), except for point \(I\) which is the start and end point, so is not an intersection point of \(E\) either.
+\end{itemize}
+
+Let \(\alpha \in (-\pi, \pi)\) be the exterior angle of \(E\) at vertex \(I\). Since \(E\) is a simple polygon it can't have exterior angles of \(\pm\pi\), else the bounding edges would go back on themselves contradicting \(E\)'s simplicity and our earlier assumption.
 
 Suppose now we were to `walk' a cycle through the edges of \(P\) starting at the midpoint of the line segment formed by \(I\) and one of the two vertices adjacent to \(I\) which is common to both \(P\) and \(E\) (either \(v_0\) or \(v_3\) in figure \ref{simple-polygon-extraction}). Suppose we start walking in the direction away from \(I\) and are only allowed to walk forward and turn.
 
@@ -260,16 +264,29 @@ Since we know that \(\sum T_E \geq 2\pi\) due to the simplicity of \(E\), and th
 	\sum T_P \geq 3\pi - |\alpha| > 2\pi
 \end{equation}
 
+\subsubsection{Complex Polygons Containing a Turn of \(\pi\) Radians} \label{overlapping-edges}
+
+Although we've already shown our claim to be true for most complex polygons, we've conveniently ignored a family of cases where the previous proof cannot apply. We shall now address those.
+
+Firstly, if there are more than two edges which double back on their previous neighbour, then since each consists of a turn of \(\pi\) radians, there must be more than \(2\pi\) radians in the total turn of the polygon.
+
+Secondly, if there are precisely two such cases at vertices \(v_i\) and \(v_j\) then either these are the only two significant vertices and can discard this as invalid input as done in the algorithm, or we have at least one other (non-zero) turn at another significant vertex \(v_k\); in which case the total turn is \(2\pi\) for the two turns at \(v_i\) and \(v_j\), plus the turn at \(v_k\), in total exceeding \(2\pi\).
+
+Finally if there is only one such case of a vertex \(v\) with turn of \(\pi\) radians, then we can apply the same procedure to extract a simple polygon from our complex one with the sole exception that the starting point which would otherwise have had the freedom to be arbitrarily chosen must be at \(v\).
+
+With such a starting point it is guaranteed that the extracted polygon will be well defined and simple since the first intersection point to be encountered twice (\(I\)) will either not lie on the overlapping edges created by the turn of \(\pi\) radians at \(v\) (this occurs in the case where other intersection points exist), otherwise it is the point furthest from \(v\) to lie on both edges adjacent to \(v\) with the extracted polygon \(E\) being the original polygon minus the vertex \(v\). Once we have our extracted simple polygon, the remainder of the proof is the same as with the other complex polygons.
+
 \subsubsection{Non-planar Polygons Have a Total Turn Greater Than \(2\pi\)}
 
-As explained in an answer on Mathematics Stack Exchange\autocite{brainjam}, the proof for this lies in Lemma 2.1 of Sullivan, Curves of Finite Total Curvature\autocite{sullivan}.
-
-Here's a paraphrased version of said lemma:
+The proof for this can be found in Lemma 2.1 of Sullivan, Curves of Finite Total Curvature.\textsuperscript{\cite{sullivan}} Here's a paraphrased version of the lemma.
 
 \begin{quotation}
 	Suppose \(P\) is a polygon in \(\mathbb{R}^3\). If \(P'\) is obtained from \(P\) by deleting one vertex \(v_n\) then \(\sum T_{P'} \leq \sum T_P\). We have equality here if \(v_{n-1} v_n v_{n+1}\) are colinear in that order or if \(v_{n-2} v_{n-1} v_n v_{n+1} v_{n+2}\) lie convexly in some plane, but never otherwise.
 \end{quotation}
 
-For a non-planar polygon \(P\), removing vertices \(v_n\) until only a triangle \(Q\) is left defines a sequence of polygons whose total turn is decreasing. In at least one pair of the sequence (corresponding to where some \(v_{n-2} v_{n-1} v_{n} v_{n+1} v_{n+2}\) is not planar), the total turn must be strictly decreasing.  Since \(\sum T_Q = 2\pi\) by virtue of \(Q\) being a triangle, we conclude that  \(\sum T_P > 2\pi\).
+For a non-planar polygon \(P\), removing vertices \(v_n\) until only a triangle \(Q\) is left defines a sequence of polygons whose total turn is decreasing. In at least one pair of the sequence (corresponding to where some \(v_{n-2} v_{n-1} v_{n} v_{n+1} v_{n+2}\) is not planar), the total turn must be strictly decreasing.  Since \(\sum T_Q = 2\pi\) by virtue of \(Q\) being a triangle, we conclude that  \(\sum T_P > \sum T_Q = 2\pi\).
+
+\bibliographystyle{unsrt}
+\bibliography{references}
 
 \end{document}
