@@ -152,15 +152,15 @@ A sequence of vertices \(P\) forms a convex polygon if and only if the total tur
 
 In order to prove our claim, we must prove all of the following cases.
 \begin{enumerate}
-	\item If a polygon is convex then the total turn is equal to \(2\pi\).
-	\item If a polygon is concave then the total turn is greater than \(2\pi\).
-	\item If a polygon is complex then the total turn is greater than \(2\pi\).
-	\item If a polygon is non-planar, then the total turn is greater than \(2\pi\).
+	\item If a polygon is convex then the total turn is equal to \(2\pi\). (See \S\ref{convex}.)
+	\item If a polygon is concave then the total turn is greater than \(2\pi\). (See \S\ref{concave}.)
+	\item If a polygon is complex then the total turn is greater than \(2\pi\). (See \S\ref{complex} and \S\ref{overlapping-edges}.)
+	\item If a polygon is non-planar, then the total turn is greater than \(2\pi\). (See \S\ref{non-planar}.)
 \end{enumerate}
 
 \subsection{Proof}
 
-\subsubsection{Convex Polygons Have a Total Turn of Precisely \(2\pi\)}
+\subsubsection{Convex Polygons Have a Total Turn of Precisely \(2\pi\)} \label{convex}
 
 It is known that the exterior angles of a simple polygon sum to precisely \(2\pi\). An exterior angle is defined as \(\pi\) minus the interior angle. However since by definition of a convex polygon all its interior angles are less than \(\pi\), the exterior angles must be positive.
 
@@ -170,7 +170,7 @@ Therefore for a convex polygon \(P\), we have
 \end{equation*}
 where \(\exta (v)\) is the exterior angle at vertex \(v\).
 
-\subsubsection{The Total Turn of a Concave Polygon Exceeds \(2\pi\)}
+\subsubsection{The Total Turn of a Concave Polygon Exceeds \(2\pi\)} \label{concave}
 
 A concave polygon must have at least one negative exterior angle. This is because it must have, by definition, at least one interior angle greater than \(\pi\) radians. Since \(\exta(v) = \pi - \inta(v)\), where \(\inta(v)\) is the interior angle, \(\exta(v)\) must be negative for some vertex \(v\).
 
@@ -179,11 +179,11 @@ Therefore for a concave polygon \(P\), we have the following inequality.
 	\sum T_P = \sum_{v \in P} T_P(v) = \sum_{v \in P} | \exta(v) | > \sum_{v \in P} \exta(v) = 2\pi
 \end{equation*}
 
-\subsubsection{A Complex polygon's Total Turn Exceeds \(2\pi\)}
+\subsubsection{A Complex polygon's Total Turn Exceeds \(2\pi\)} \label{complex}
 
 For any complex polygon \(P\), we are able to find a sequence of consecutive vertices of \(P\) which when appended to an intersection point of \(P\) forms a simple polygon \(E\) in the following way.
 
-First we must assume that no edge doubles back on the previous edge. This means that \(\forall v \in P,\ T_P(v) < \pi\). For cases where this assumption does not hold, see section \ref{overlapping-edges}. This will allow us to assert that \(E\) is simple.
+First we must assume that no edge doubles back on the previous edge. This means that \(\forall v \in P,\ T_P(v) < \pi\). For cases where this assumption does not hold, see \S\ref{overlapping-edges}. This will allow us to assert that \(E\) is simple.
 
 We choose any arbitrary point on the polygon's bounding path. Then from that point we trace the bounding path, marking any intersection points we encounter. Once we arrive at an intersection point which we've previously encountered, we stop. Let this intersection point be called \(I\).
 
@@ -276,7 +276,7 @@ Finally if there is only one such case of a vertex \(v\) with turn of \(\pi\) ra
 
 With such a starting point it is guaranteed that the extracted polygon will be well defined and simple since the first intersection point to be encountered twice (\(I\)) will either not lie on the overlapping edges created by the turn of \(\pi\) radians at \(v\) (this occurs in the case where other intersection points exist), otherwise it is the point furthest from \(v\) to lie on both edges adjacent to \(v\) with the extracted polygon \(E\) being the original polygon minus the vertex \(v\). Once we have our extracted simple polygon, the remainder of the proof is the same as with the other complex polygons.
 
-\subsubsection{Non-planar Polygons Have a Total Turn Greater Than \(2\pi\)}
+\subsubsection{Non-planar Polygons Have a Total Turn Greater Than \(2\pi\)} \label{non-planar}
 
 The proof for this can be found in Lemma 2.1 of Sullivan, Curves of Finite Total Curvature.\textsuperscript{\cite{sullivan}} Here's a paraphrased version of the lemma.
 
