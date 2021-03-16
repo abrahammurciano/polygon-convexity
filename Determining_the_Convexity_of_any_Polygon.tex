@@ -5,6 +5,10 @@
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}		% for algorithms in pseudo code. Usage: \begin{algorithmic}
 \usepackage{subcaption}
+
+\usepackage[backend=bibtex,style=verbose-trad2]{biblatex}
+\bibliography{references}
+
 \usepackage{tikz}
 \usetikzlibrary{decorations.pathmorphing}
 \usetikzlibrary{decorations.markings}
@@ -255,5 +259,17 @@ Since we know that \(\sum T_E \geq 2\pi\) due to the simplicity of \(E\), and th
 \begin{equation}
 	\sum T_P \geq 3\pi - |\alpha| > 2\pi
 \end{equation}
+
+\subsubsection{Non-planar Polygons Have a Total Turn Greater Than \(2\pi\)}
+
+As explained in an answer on Mathematics Stack Exchange\autocite{brainjam}, the proof for this lies in Lemma 2.1 of Sullivan, Curves of Finite Total Curvature\autocite{sullivan}.
+
+Here's a paraphrased version of said lemma:
+
+\begin{quotation}
+	Suppose \(P\) is a polygon in \(\mathbb{R}^3\). If \(P'\) is obtained from \(P\) by deleting one vertex \(v_n\) then \(\sum T_{P'} \leq \sum T_P\). We have equality here if \(v_{n-1} v_n v_{n+1}\) are colinear in that order or if \(v_{n-2} v_{n-1} v_n v_{n+1} v_{n+2}\) lie convexly in some plane, but never otherwise.
+\end{quotation}
+
+For a non-planar polygon \(P\), removing vertices \(v_n\) until only a triangle \(Q\) is left defines a sequence of polygons whose total turn is decreasing. In at least one pair of the sequence (corresponding to where some \(v_{n-2} v_{n-1} v_{n} v_{n+1} v_{n+2}\) is not planar), the total turn must be strictly decreasing.  Since \(\sum T_Q = 2\pi\) by virtue of \(Q\) being a triangle, we conclude that  \(\sum T_P > 2\pi\).
 
 \end{document}
